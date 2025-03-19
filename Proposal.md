@@ -1,4 +1,4 @@
-# **Rust Thicc 2D**
+# **Rustic 2D**
 
 ### Michala Kovaľová, Martin Gašparík, Andrei Vlad Danilov
 
