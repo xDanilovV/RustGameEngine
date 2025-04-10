@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use crate::animation::{AnimationConfig, PlayerState};
+use crate::animation::{AnimationConfig, PlayerState, FIRST_IDLE, LAST_IDLE, FPS_IDLE, FIRST_RUNNING, LAST_RUNNING, FPS_RUNNING};
+
 
 #[derive(Component)]
 pub struct Player;
@@ -55,12 +56,12 @@ pub fn character_movement(
             (PlayerState::Idle, true) => {
                 // Change to running animation
                 *player_state = PlayerState::Running;
-                *config = AnimationConfig::new(40, 43, 15);
+                *config = AnimationConfig::new(FIRST_RUNNING, LAST_RUNNING, FPS_RUNNING);
             },
             (PlayerState::Running, false) => {
                 // Change to idle animation
                 *player_state = PlayerState::Idle;
-                *config = AnimationConfig::new(36, 39, 6);
+                *config = AnimationConfig::new(FIRST_IDLE, LAST_IDLE, FPS_IDLE);
             },
             _ => {} // No state change needed
         }

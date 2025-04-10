@@ -2,6 +2,12 @@ use bevy::prelude::*;
 use std::time::Duration;
 //use crate::movement::Player;
 
+pub const FIRST_RUNNING: usize = 40;
+pub const LAST_RUNNING: usize = 43;
+pub const FPS_RUNNING: u8 = 12;
+pub const FIRST_IDLE: usize = 36;
+pub const LAST_IDLE: usize = 39;
+pub const FPS_IDLE: u8 = 7;
 #[derive(Component, PartialEq, Clone, Copy, Debug)]
 pub enum PlayerState {
     Idle,
