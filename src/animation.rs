@@ -1,19 +1,19 @@
 use bevy::prelude::*;
 use std::time::Duration;
-//use crate::movement::Player;
 
+// Animation constants
 pub const FIRST_RUNNING: usize = 40;
 pub const LAST_RUNNING: usize = 43;
 pub const FPS_RUNNING: u8 = 12;
 pub const FIRST_IDLE: usize = 36;
 pub const LAST_IDLE: usize = 39;
-pub const FPS_IDLE: u8 = 7;
+pub const FPS_IDLE: u8 = 8;
+
 #[derive(Component, PartialEq, Clone, Copy, Debug)]
 pub enum PlayerState {
     Idle,
     Running,
 }
-
 impl Default for PlayerState {
     fn default() -> Self {
         PlayerState::Idle
@@ -24,7 +24,6 @@ impl Default for PlayerState {
 pub struct AnimationConfig {
     pub first_sprite_index: usize,
     pub last_sprite_index: usize,
-    //pub fps: u8,
     pub frame_timer: Timer,
     pub current_frame: usize,
 }
@@ -34,7 +33,6 @@ impl AnimationConfig {
         Self {
             first_sprite_index: first,
             last_sprite_index: last,
-            //fps,
             frame_timer: Self::timer_from_fps(fps),
             current_frame: first,
         }
@@ -45,14 +43,16 @@ impl AnimationConfig {
     }
 }
 
+// Handle animations
 pub fn execute_animations(time: Res<Time>, mut query: Query<(&mut AnimationConfig, &mut Sprite)>) {
     for (mut config, mut sprite) in &mut query {
         // Tick the animation timer
         config.frame_timer.tick(time.delta());
 
-        // If it has been displayed for the user-defined amount of time (fps)...
+        // If it has been displayed for the correct amount of time (calculated from fps in anim. config)
         if config.frame_timer.just_finished() {
             if let Some(atlas) = &mut sprite.texture_atlas {
+                // If the animation needs to start again
                 if atlas.index >= config.last_sprite_index {
                     atlas.index = config.first_sprite_index;
                 } else {
@@ -62,6 +62,34 @@ pub fn execute_animations(time: Res<Time>, mut query: Query<(&mut AnimationConfi
                 // Update the current frame tracker
                 config.current_frame = atlas.index;
             }
+        }
+    }
+}
+
+// Animation state management system
+pub fn update_animation_state(
+    mut query: Query<(&mut PlayerState, &mut AnimationConfig, &crate::movement::MovementState)>,
+) {
+    for (
+        mut player_state, 
+        mut config, 
+        movement_state
+    ) in query.iter_mut() {
+        let current_state = *player_state;
+        let is_moving = *movement_state == crate::movement::MovementState::Moving;
+
+        match (current_state, is_moving) {
+            (PlayerState::Idle, true) => {
+                // Change to running animation
+                *player_state = PlayerState::Running;
+                *config = AnimationConfig::new(FIRST_RUNNING, LAST_RUNNING, FPS_RUNNING);
+            },
+            (PlayerState::Running, false) => {
+                // Change to idle animation
+                *player_state = PlayerState::Idle;
+                *config = AnimationConfig::new(FIRST_IDLE, LAST_IDLE, FPS_IDLE);
+            },
+            _ => {} // No state change needed
         }
     }
 }
