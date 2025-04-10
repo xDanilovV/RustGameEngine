@@ -1,7 +1,11 @@
-// src/main.rs
-use bevy::prelude::*;
+mod animation;
+mod movement;
 
-fn main(){
+use bevy::prelude::*;
+use animation::{/*AnimationConfig,*/ execute_animations/*, PlayerState*/};
+use movement::{character_movement/*, Player*/, FacingDirection};
+
+fn main() {
     App::new()
         .add_plugins(
             DefaultPlugins
@@ -18,46 +22,40 @@ fn main(){
                 .build(),
         )
         .add_systems(Startup, setup)
-        .add_systems(Update, character_movement)
+        .add_systems(Update, (character_movement, execute_animations))
         .run();
 }
 
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    //mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     commands.spawn(Camera2d::default());
-    /*
+
+    // Load the character atlas
     let texture = asset_server.load("characters_atlas.png");
+    // Create the texture atlas layout (9 columns, 10 rows, 16x32 sprites)
     let layout = TextureAtlasLayout::from_grid(UVec2::new(16, 32), 9, 10, None, None);
     let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    */
 
+    // Idle animation uses indices 36-39
+    let idle_animation_config = animation::AnimationConfig::new(36, 39, 6);
+
+    // Spawn the player with animation components
     commands.spawn((
-        Sprite::from_image(asset_server.load("character.png")),
-        Transform::from_scale(Vec3::new(5.0, 5.0, 1.0)),
-
+        Sprite {
+            image: texture.clone(),
+            texture_atlas: Some(TextureAtlas {
+                layout: texture_atlas_layout,
+                index: 36,
+            }),
+            ..default()
+        },
+        Transform::from_scale(Vec3::splat(5.0)),
+        movement::Player,
+        animation::PlayerState::Idle,
+        FacingDirection { facing_right: true},
+        idle_animation_config,
     ));
-}
-
-fn character_movement(
-    mut characters: Query<(&mut Transform, &Sprite)>,
-    input: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-) {
-    for (mut transform, _) in characters.iter_mut() {
-        if input.pressed(KeyCode::KeyW) {
-            transform.translation.y += 100.0 * time.delta_secs();
-        }
-        if input.pressed(KeyCode::KeyS) {
-            transform.translation.y -= 100.0 * time.delta_secs();
-        }
-        if input.pressed(KeyCode::KeyA) {
-            transform.translation.x -= 100.0 * time.delta_secs();
-        }
-        if input.pressed(KeyCode::KeyD) {
-            transform.translation.x += 100.0 * time.delta_secs();
-        }
-    }
 }
