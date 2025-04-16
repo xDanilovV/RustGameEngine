@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::time::Duration;
 
-// Animation constants
+// Animation constantsss
 pub const FIRST_RUNNING: usize = 40;
 pub const LAST_RUNNING: usize = 43;
 pub const FPS_RUNNING: u8 = 12;
